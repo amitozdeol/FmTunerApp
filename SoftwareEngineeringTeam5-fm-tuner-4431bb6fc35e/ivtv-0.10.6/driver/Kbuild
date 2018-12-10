@@ -1,0 +1,18 @@
+ivtv-objs    := ivtv-driver.o ivtv-fileops.o ivtv-i2c.o ivtv-streams.o \
+		ivtv-firmware.o ivtv-gpio.o ivtv-queue.o \
+		ivtv-irq.o ivtv-mailbox.o ivtv-vbi.o \
+		ivtv-audio.o ivtv-ioctl.o ivtv-controls.o ivtv-video.o \
+		ivtv-cards.o ivtv-yuv.o ivtv-udma.o
+
+obj-m += ivtv.o
+
+ifneq ($(CONFIG_FB),)
+obj-m += ivtv-fb.o
+endif
+
+CONFIG_VIDEO_ADV_DEBUG=y
+CPPFLAGS := -I$(M)/../i2c-drivers $(CPPFLAGS)
+
+ifeq ($(CONFIG_VIDEO_ADV_DEBUG),y)
+EXTRA_CFLAGS += -DCONFIG_VIDEO_ADV_DEBUG=1
+endif

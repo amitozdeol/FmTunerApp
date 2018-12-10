@@ -1,0 +1,9 @@
+obj-m += saa717x.o
+
+CONFIG_VIDEO_ADV_DEBUG=y
+
+CPPFLAGS += -I$(M)/../driver
+
+ifeq ($(CONFIG_VIDEO_ADV_DEBUG),y)
+EXTRA_CFLAGS += -DCONFIG_VIDEO_ADV_DEBUG=1
+endif

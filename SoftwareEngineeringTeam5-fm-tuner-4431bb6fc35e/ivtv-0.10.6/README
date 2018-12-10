@@ -1,0 +1,156 @@
+This is the README for the ivtv module suite.
+
+----------------------------------------------------------
+
+NOTE: This driver will work with kernels 2.6.18, 2.6.19, 2.6.20.2 (or up) and 2.6.21.
+Kernels 2.6.20 and 2.6.20.1 should not be used due to a bug in the cx25840 firmware
+loading routine.
+
+
+NOTE: This driver does not support kernel 2.6.22 and up: starting with that kernel
+version ivtv will be part of the kernel itself.
+
+
+NOTE: this driver requires the latest encoder firmware (version 2.06.039, size
+376836 bytes). Get the firmware from here:
+
+http://dl.ivtvdriver.org/ivtv/firmware/firmware.tar.gz
+
+
+NOTE: When you build your own kernel, make sure you have enabled all the correct
+modules. For 2.6.18: make sure you have enabled all modules in Device Drivers,
+Multimedia devices, Video Capture Adapters, Encoders and Decoders.
+Especially the new 'Conexant CX2341x MPEG encoders' entry.
+
+For 2.6.19/20/21: In Device Drivers, Multimedia devices, Video Capture Adapters disable
+the 'Autoselect pertinent encoders/decoders and other helper chips' option, then go
+to the 'Encoders/decoders and other helper chips' entry that appeared.
+It is probably easiest to just select all modules here, unless you know exactly
+which chips your card has. One exception: I recommend that you do not enable the
+Philips SAA7114 video encoder, use 'Philips SAA7113/4/5 video decoders' instead.
+
+
+NOTE: ivtv-fb (PVR350 specific) now requires that you enable the following kernel
+config options: Go to 'Device drivers -> Graphics support'. Enable 'Support for frame
+buffer devices'. Enable 'Trident support' (the Trident module itself is not required).
+
+To get working console output, keep going to 'Console display driver support', 
+and enable 'Framebuffer Console support'. Enable 'Select compiled-in fonts' & 
+once that's done, you should have a list of fonts. Choose one. With the 
+default OSD size, 'VGA 8x16' gives 80x30(PAL) 80x25(NTSC).
+
+
+NOTE: users of MythTV who use the PVR350 for mpeg decoding need to specify
+the option osd_compat=1 when loading the ivtv-fb module. This is not required
+when using the default Xv output.
+
+
+NOTE: users of ivtv X driver may need to specify the option
+osd_compat=1 when loading the ivtv-fb module. You will only need it if the
+display becomes scrambled in X.
+
+
+NOTE: see README.v4l-dvb if you need to build ivtv as part of the latest v4l-dvb
+repository. If you don't know what this is all about, then you don't need this :-)
+
+----------------------------------------------------------
+
+The primary goal of the IVTV project is to provide a "clean room" Linux 
+Open Source driver implementation for video capture cards based on the 
+iCompression iTVC15 or Conexant CX23415/CX23416 MPEG Codec.
+
+The following cards are supported:
+
+Hauppauge WinTV PVR-250
+Hauppauge WinTV PVR-350
+Hauppauge WinTV PVR-150
+Hauppauge WinTV PVR-500
+AVerMedia M179
+Yuan MPG600/Kuroutoshikou iTVC16-STVLP
+Yuan MPG160/Kuroutoshikou iTVC15-STVLP
+Yuan PG600/DiamondMM PVR-550 (CX Falcon 2)
+Adaptec AVC-2410
+Adaptec AVC-2010
+Nagase Transgear 5000TV
+AOpen VA2000MAX-STN6
+Yuan MPG600GR/Kuroutoshikou CX23416GYC-STVLP
+I/O Data GV-MVP/RX
+I/O Data GV-MVP/RX2E
+Gotview PCI DVD (preliminary support only)
+Gotview PCI DVD2 Deluxe
+Yuan MPC622
+Digital Cowboy DCT-MTVP1
+Yuan PG600V2/GotView PCI DVD Lite (no tuner support)
+Club3D ZAP-TV1x01 (no tuner support)
+AverTV MCE 116 Plus (no tuner support)
+
+A special note regarding the PVR-500: this card basically consists of two
+PVR-150 cards on one board but with the following difference: Radio,
+Composite video and S-video are only hooked up to the first PVR-150 instance.
+
+The Hauppauge cable set that you can buy for their cards to add an additional
+Composite/S-Video input is also supported.
+
+Features:
+ * Hardware mpeg2 capture of broadcast video (and sound) via the tuner or
+   S-Video/Composite and audio line-in.
+ * Hardware mpeg2 capture of FM radio where hardware support exists
+ * Supports NTSC, PAL, SECAM with stereo sound
+ * Supports SAP and bilingual transmissions.
+ * Supports raw VBI (closed captions and teletext).
+ * Supports raw YUV and PCM input.
+
+Additional features for the PVR-350 (CX23415 based):
+ * Provides hardware mpeg2 playback
+ * Provides comprehensive OSD (On Screen Display: ie. graphics overlaying the
+   video signal)
+ * Provides a framebuffer (allowing X applications to appear on the video
+   device)
+ * Supports raw YUV output.
+
+IMPORTANT: In case of problems first read this page:
+	   http://www.ivtvdriver.org/index.php/Troubleshooting
+
+
+doc/ - contains documentation :)
+   /README.install      Installation info
+   /modules.txt         Module parameters
+   /README.ivtvfb       The ivtv framebuffer
+   /README.devices      /dev/xxxx devices
+   /README.utils        Included utilities
+   /README.lirc         Infrared remote control
+   /README.vbi          VBI (Teletext, widescreen, close captioning, etc.)
+   /README.radio        The FM Radio
+   /video-quality.txt   Some notes on video quality
+driver/ - actual driver files, Makefile, etc
+utils/ - some useful (and required) tools for managing the hardware
+test/ - some useful test tools for testing the hardware
+misc/ - some patches, configuration for third party applications
+
+Note: the old sourceforge ivtv project is no longer active and will
+redirect to ivtvdriver.org. All development now takes place in the
+subversion repository on ivtvdriver.org.
+
+Also see:
+
+Homepage + Wiki
+http://www.ivtvdriver.org
+
+Subversion repository:
+http://ivtvdriver.org/svn/ivtv
+
+Download area:
+http://dl.ivtvdriver.org
+
+Mail Archives
+http://www.gossamer-threads.com/lists/ivtv/devel/
+http://www.gossamer-threads.com/lists/ivtv/users/
+
+Forum
+http://www.shspvr.com/smf/
+
+IRC
+irc://irc.freenode.net/ivtv-dev
+
+Donations
+http://www.ivtvdriver.org/index.php/IVTV:Site_support

@@ -1,0 +1,189 @@
+Instructions for making ivtv-fb work with XFree86:
+Add the following sections and parts thereof to /etc/X11/XF86Config:
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+# NOTE: The monitor section is obtainable by running:
+# fbset -fb /dev/fb1 -x
+# (or /dev/fbX for whatever framebuffer ivtv-fb is on
+#  as discussed in install.txt)
+#
+Section "Monitor"
+    Identifier  "NTSC Monitor"
+    HorizSync  10-68
+    VertRefresh 25-120
+
+    Mode "720x480"
+      # D: 23.831 MHz, H: 29.788 kHz, V: 59.936 Hz
+      DotClock 23.832
+      HTimings 720 775 799 800
+      VTimings 480 494 496 497
+      Flags    "-HSync" "-VSync"
+    EndMode
+EndSection
+
+# Uncomment the following for PAL
+#Section "Monitor"
+#    Identifier  "PAL Monitor"
+#    HorizSync  10-68
+#    VertRefresh 20-120
+#
+#    Mode "720x576"
+#      # D: 23.720 MHz, H: 29.650 kHz, V: 50.001 Hz
+#      DotClock 23.72
+#      HTimings 720 775 799 800
+#      VTimings 576 590 592 593
+#      Flags    "-HSync" "-VSync"
+#    EndMode
+#EndSection
+
+Section "Device"
+    Identifier  "Hauppauge PVR 350 iTVC15 Framebuffer"
+    Driver      "ivtvdev"
+    Option      "fbdev" "/dev/fb1"      # <-- modify if using another device
+    BusID "0:10:0"                      # <-- obtain from lspci (see later)
+EndSection
+
+Section "Screen"
+  Identifier  "TV Screen"
+  Device      "Hauppauge PVR 350 iTVC15 Framebuffer"
+  Monitor     "NTSC Monitor"            # <-- select for NTSC
+#  Monitor     "PAL Monitor"            # <-- select for PAL
+  DefaultDepth 24
+  DefaultFbbpp 32
+  Subsection "Display"
+    Depth 24
+    FbBpp 32
+    Modes "720x480"                     # <-- select for NTSC
+#    Modes "720x576"                    # <-- select for PAL
+  EndSubsection
+EndSection
+
+Section "ServerLayout"
+  ...
+
+  Screen 0 "Screen 1"                      # << (your computer monitor)
+
+  # (add the following line)
+  Screen 1 "TV Screen" RightOf "Screen 1"  # << (TV screen)
+
+  ...
+EndSection
+<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+Then start X as usual; both your normal (computer) monitor and the
+NTSC or PAL TV monitor should display the default X background.
+
+Note the "RightOf" clause above: if you move the mouse off the right
+side of the computer screen, the pointer should appear on your TV
+screen. Keyboard events will go to windows in either screen.
+
+To start a program (e.g., xterm) on the TV only:
+
+ export DISPLAY=:0.1         (i.e., X server #0, screen #1 = TV)
+ xterm&
+
+There is also a way to join both the computer monitor and TV into
+one giant virtual screen using the Xinerama extension, but I haven't 
+tried it. Doing so may not be such a good idea anyway, as you obviously
+wouldn't want random X windows getting moved over the TV picture.
+
+Additional notes if using ivtv X driver > 0.10.6
+================================================
+
+It's possible to change the output resolution via randr support.
+Although multiple resolutions can be defined, the framebuffer output
+cannot be scaled. This means that a mode such as 640x400 will not fill
+the entire screen & there will be a blank area surrounding it. This is
+useful for restricting the framebuffer output to the non-overscan area
+of the TV screen. To add new modes, edit the 'Monitor' section adding
+the new mode information.
+
+i.e for NTSC
+
+    Mode "640x400"
+      # D: 23.831 MHz, H: 29.788 kHz, V: 59.936 Hz
+      DotClock 23.832
+      HTimings 640 735 759 800
+      VTimings 400 454 456 497
+      Flags    "-HSync" "-VSync"
+    EndMode
+
+...for PAL
+    Mode "640x480"
+      # D: 23.720 MHz, H: 29.650 kHz, V: 50.001 Hz
+      DotClock 23.721
+      HTimings 640 735 759 800
+      VTimings 480 542 544 593
+      Flags    "-HSync" "-VSync"
+    EndMode
+
+Remember to add the new mode to the 'Modes' line in the 'Screen' section.
+i.e. 'Modes "720x480"' becomes 'Modes "720x480" "640x400"'
+
+To create a mode where the osd filter is not active, you will need to
+create an interlaced mode. To do this, add "Interlace" to the 'Flags'
+line & change the 'DotClock' to 11.916 (NTSC) or 11.861 (PAL).
+
+It's possible to use more than one PVR350 framebuffer for output. Simply
+create additional 'Device' & 'Screen' sections in the X configuration
+file. Remember to add the new screen to the 'ServerLayout' section.
+
+The screen depth (bpp) can be changed from 32, to either 8 or 16.
+Simply change the DefaultDepth, Depth, DefaultFbbpp & FbBpp
+entries to 8 or 16.
+
+A note on unloading the fb driver:
+==================================
+
+If you want to be able to unload the framebuffer driver (and you aren't
+already using fbcon),  add this to your lilo config:
+
+video=vc:x-y
+
+where x is the first fb device to allocate and y is the second. If you 
+already have a fb driver loaded, fiddle with the numbers so all the consoles
+are already allocated. For me, i just set it to 0-0, ie:
+
+in lilo.conf:
+
+image=/vmlinuz
+        label=linux
+        read-only
+        append="root=/dev/hda1 video=vc:0-0"
+
+--OR--
+on bootup, do this
+LILO: linux video=vc:0-0
+
+according to how i read /usr/src/linux/drivers/video/fbmem.c and
+/usr/src/linux/drivers/char/console.c, that should disable the
+console hijacks, and allow you to unload the driver.
+
+ivtvfbctl
+=========
+
+The ivtvfbctl command allows aspects of the ivtv framebuffer to be controlled.
+
+The command is:
+ivtvfbctl
+    [--device=/dev/fbX]
+    [--globalalpha=<on>|<off>]
+    [--localalpha=<on>|<off>]
+    [--alpha=<val>]
+
+[--device=/dev/fbX]
+Set the framebuffer device used by your tuner card (default: /dev/fb0)
+
+[--globalalpha=<on>|<off>]
+Toggle global alpha layer
+
+[--localalpha=<on>|<off>]
+Toggle local alpha layer
+
+[--alpha=<val>]
+Sets the global alpha level for the framebuffer.
+
+If this is set to 0 the framebuffer is completely transparent.
+If it's set to 255 it's completely opaque.
+Note that even if it set to 0 it will still produce a slight 'haze'
+and the framebuffer output should be turned off in this case.
+

@@ -1,0 +1,17 @@
+The ivtv-0.10.X driver works fine for kernels >= 2.6.18 and <= 2.6.21.
+If you want to use the very latest ivtv driver for any kernel >= 2.6.12
+then you have to use the v4l-dvb repository available from www.linuxtv.org.
+
+This repository contains the latest and (usually) greatest v4l and dvb
+drivers and will build on any kernel >= 2.6.12.
+
+You can either get the repository from here:
+
+  http://linuxtv.org/hg/v4l-dvb/archive/tip.tar.bz2
+
+or by using mercurial and running:
+
+  hg clone http://linuxtv.org/hg/v4l-dvb
+
+You build everything by running 'make' and 'make install'.
+It will overwrite all existing v4l-dvb modules of your kernel.
